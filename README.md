@@ -22,6 +22,7 @@ If our project adds value to your day or if you’re simply a fan of cool, open-
 - [Screenshot](#screenshot)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Browser Compatibility](#browser-compatibility)
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
@@ -86,6 +87,25 @@ If you prefer not to use Git, you can download the project as a ZIP file:
 2. Click the green **"Code"** button at the top right of the repository's file list.
 3. Select **"Download ZIP"** from the dropdown menu.
 4. Once the ZIP file is downloaded, extract it to your desired location.
+
+## Usage
+
+This is a standard frontend project, so you can run it directly in your web browser without any complex setup or server configuration:
+
+1. Open the project folder on your computer.
+2. Locate the `index.html` file.
+3. **Double-click** the `index.html` file to launch it in your default web browser.
+
+*Alternative Method:* You can also drag and drop the `index.html` file directly into any open browser tab (Chrome, Firefox, Safari, Edge, etc.).
+
+## Browser Compatibility
+
+Tested and working on:
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+- Mobile browsers (iOS Safari, Android Chrome)
 
 ## Contributing
 
