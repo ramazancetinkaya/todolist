@@ -1,9 +1,9 @@
 # To-Do List
 
-[![GitHub license](https://img.shields.io/github/license/ramazancetinkaya/simple-todolist.svg)](LICENSE)
-[![GitHub issues](https://img.shields.io/github/issues/ramazancetinkaya/simple-todolist)](https://github.com/ramazancetinkaya/simple-todolist/issues)
-[![GitHub stars](https://img.shields.io/github/stars/ramazancetinkaya/simple-todolist)](https://github.com/ramazancetinkaya/simple-todolist/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/ramazancetinkaya/simple-todolist)](https://github.com/ramazancetinkaya/simple-todolist/network)
+[![GitHub license](https://img.shields.io/github/license/ramazancetinkaya/todolist.svg)](LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/ramazancetinkaya/todolist)](https://github.com/ramazancetinkaya/todolist/issues)
+[![GitHub stars](https://img.shields.io/github/stars/ramazancetinkaya/todolist)](https://github.com/ramazancetinkaya/todolist/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/ramazancetinkaya/todolist)](https://github.com/ramazancetinkaya/todolist/network)
 
 A **minimalist**, **responsive**, and **feature-rich** To-Do List web application built with **HTML**, **CSS**, and **Vanilla JavaScript**.
 
@@ -28,20 +28,20 @@ If our project adds value to your day or if you’re simply a fan of cool, open-
 
 ## Features
 
-- **Responsive Design:** Works flawlessly on mobile, tablet, and desktop devices.
-- **Input Validation:** Ensures todos are entered using only allowed characters, with defined minimum and maximum character limits.
-- **Dynamic Priority Management:** Todos are automatically sorted by priority (High, Medium, Low) and users can cycle through priority levels by clicking on the indicator.
-- **Undo Functionality:** Restore accidentally deleted todos within a 5-second window.
-- **Toast Notifications:** Smooth, responsive notifications that provide instant feedback without overflow issues.
-- **CRUD Operations:** Add, edit, and delete todos with modal support.
-- **Local Storage Persistence:** Todos are saved locally so they remain between sessions.
-- **Modern Minimalist UI:** Clean design with professional styling.
+- Three-Column Kanban Board: Tasks flow dynamically across To Do, In Progress, and Done stages.
+- Intuitive Drag and Drop: Native HTML5 drag-and-drop functionality with responsive navigation arrow fallbacks for touch devices.
+- Inline Task Creator: Collapsible, character-limited title and optional description inputs without distracting modal popups.
+- Direct Priority Adjustments: Quick-toggle priority levels (Low, Medium, High) directly from task cards or via custom context menus.
+- Smart Right-Click Context Menu: Fast, desktop-like mouse controls to view, edit, move, or delete tasks.
+- Advanced Sorting and Filtering: Real-time search indexing, priority filters, and chronological sorting utilities.
+- Local Persistence: Instant state preservation using local browser storage (localStorage) under the "todolist" key.
+- Dynamic Time Tracking: Tracks task creation and last-modified timestamps with relative "time ago" formatting.
 
 ## Demo
 
 Experience the application instantly via GitHub Pages:
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Click%20Here-blue?style=for-the-badge)](https://ramazancetinkaya.github.io/simple-todolist/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Click%20Here-blue?style=for-the-badge)](https://ramazancetinkaya.github.io/todolist/)
 
 ## Screenshot
 
@@ -69,13 +69,13 @@ If you have Git installed, you can clone the repository by following these steps
 2. Run the following command:
    
     ```bash
-    git clone https://github.com/ramazancetinkaya/simple-todolist.git
+    git clone https://github.com/ramazancetinkaya/todolist.git
     ```
 
 4. Navigate into the project directory:
 
     ```bash
-    cd simple-todolist
+    cd todolist
     ```
 
 ### 2. Download as ZIP
@@ -121,7 +121,6 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Contact
 
-For any inquiries, please contact:
+Whether you need to report an issue, propose a new feature, require setup and integration guidance, or submit a security disclosure, please reach out directly:
 
-- **Ramazan Çetinkaya** – [ramazancetinkayasoftware@proton.me](mailto:ramazancetinkayasoftware@proton.me)
-- GitHub: [@ramazancetinkaya](https://github.com/ramazancetinkaya)
+📧 **Contact Email**: `ramazancetinkayasolutions@protonmail.com`
