@@ -1,721 +1,2343 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>To-Do List</title>
-  <!-- FontAwesome Icons for UI elements -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" 
-    integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" 
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <!-- Google Fonts: Poppins for a modern, clean typography -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    /* ============================================
-       Global Reset and Base Styles
-    ============================================ */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: #f7f7f7;
-      color: #333;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>todolist</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* ==========================================================================
+           1. CSS CUSTOM PROPERTIES (DESIGN TOKENS)
+              Maintains a clean, neutral, and high-contrast light-mode SaaS palette.
+           ========================================================================== */
+        :root {
+            /* Base Canvas and Surface Backgrounds */
+            --bg-main: #f8fafc;          /* Gentle slate canvas */
+            --bg-card: #ffffff;          /* Pure pristine white for cards and modals */
+            --border-color: #e2e8f0;     /* Soft slate border for subtle nesting */
+            --border-focus: #4f46e5;     /* Prominent indigo accent for focused controls */
+            
+            /* High-Contrast Typography Hierarchy (Slate scale) */
+            --text-primary: #0f172a;     /* Slate 900: Titles & Headers */
+            --text-secondary: #475569;   /* Slate 600: Descriptions & Subtext */
+            --text-muted: #94a3b8;       /* Slate 400: Placeholders & Counters */
+            
+            /* SaaS Theme Indigo Palette */
+            --primary: #4f46e5;          /* Master theme color */
+            --primary-hover: #4338ca;    /* Darkened hover shade */
+            --primary-light: #eeebff;    /* Translucent background fill */
+            
+            /* Prioritized Warning System (Subdued Backgrounds & Hard Borders) */
+            --priority-low-bg: #f0fdf4;
+            --priority-low-text: #16a34a;
+            --priority-low-border: #10b981;
+            
+            --priority-medium-bg: #fffbeb;
+            --priority-medium-text: #d97706;
+            --priority-medium-border: #f59e0b;
+            
+            --priority-high-bg: #fef2f2;
+            --priority-high-text: #dc2626;
+            --priority-high-border: #f43f5e;
+            
+            /* Elevation & Shadow Levels */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+            
+            /* Micro-interaction Animation Timing */
+            --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-    /* ============================================
-       Main Container Styles
-    ============================================ */
-    .todo-container {
-      background: #fff;
-      width: 100%;
-      max-width: 600px;
-      border-radius: 10px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-      padding: 30px 40px;
-      transition: box-shadow 0.3s ease;
-    }
-    .todo-container:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
-    h1 {
-      text-align: center;
-      margin-bottom: 24px;
-      font-size: 1.9rem;
-      font-weight: 500;
-    }
+        /* ==========================================================================
+           2. GLOBAL ELEMENT RESET & ROOT HYDRATION
+           ========================================================================== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
 
-    /* ============================================
-       Input Section Styles
-    ============================================ */
-    .input-section {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 24px;
-    }
-    /* Todo text input */
-    .input-section input[type="text"] {
-      flex: 1 1 280px;
-      padding: 12px 14px;
-      font-size: 1rem;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      transition: border-color 0.3s;
-    }
-    .input-section input[type="text"]:focus {
-      outline: none;
-      border-color: #555;
-    }
-    /* Priority selection dropdown */
-    .input-section select {
-      flex: 0 0 120px;
-      padding: 12px 10px;
-      font-size: 1rem;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      background: #fff;
-      transition: border-color 0.3s;
-    }
-    .input-section select:focus {
-      outline: none;
-      border-color: #555;
-    }
-    /* Add Todo Button */
-    .input-section button {
-      flex: 0 0 auto;
-      background: #555;
-      border: none;
-      color: #fff;
-      padding: 0 16px;
-      font-size: 1.1rem;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.3s, transform 0.2s;
-    }
-    .input-section button:hover {
-      background: #333;
-      transform: scale(1.04);
-    }
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            height: 100vh;
+            height: 100dvh;             /* Dynamic viewport height to prevent iOS address bar shifts */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 24px 16px 12px 16px;
+            overflow: hidden;            /* Hard lock on viewport to prevent double-scrollbars */
+        }
 
-    /* ============================================
-       Filter Section Styles
-    ============================================ */
-    .filters {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 24px;
-    }
-    .filter-btns {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .filter-btns button,
-    .clear-btn {
-      padding: 8px 12px;
-      font-size: 0.9rem;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      background: #fff;
-      cursor: pointer;
-      transition: background 0.3s, color 0.3s;
-    }
-    .filter-btns button.active,
-    .filter-btns button:hover {
-      background: #333;
-      color: #fff;
-    }
-    .clear-btn {
-      border-color: #e74c3c;
-      color: #e74c3c;
-    }
-    .clear-btn:hover {
-      background: #e74c3c;
-      color: #fff;
-    }
+        /* Utility class to hide native scrollbar tracks while retaining scroll capability */
+        .no-scrollbar {
+            -ms-overflow-style: none;    /* Internet Explorer & Legacy Edge */
+            scrollbar-width: none;       /* Firefox */
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;               /* WebKit Engines (Chrome, Safari, Opera) */
+        }
 
-    /* ============================================
-       Todo List Styles
-    ============================================ */
-    .todo-list {
-      list-style: none;
-      max-height: 400px;
-      overflow-y: auto;
-      padding-right: 4px;
-    }
-    .todo-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px;
-      border-bottom: 1px solid #f1f1f1;
-      transition: background 0.3s;
-    }
-    .todo-item:last-child { border-bottom: none; }
-    .todo-item:hover { background: #f9f9f9; }
-    .todo-text {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex: 1;
-      font-size: 1rem;
-      word-break: break-word;
-    }
-    .todo-text.completed span {
-      text-decoration: line-through;
-      color: #aaa;
-    }
+        /* ==========================================================================
+           3. MASTER APPLICATION CONTAINER
+              Designed as a flex container that scales to its relative viewport.
+           ========================================================================== */
+        .app-card {
+            width: 100%;
+            max-width: 1080px;
+            flex: 1;                     /* Expands fully into the remaining vertical spacing */
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;            /* Masks absolute inner context menus and dropdown bounds */
+            position: relative;
+        }
 
-    /* ============================================
-       Priority Indicator Styles
-    ============================================ */
-    .priority-indicator {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      display: inline-block;
-      flex-shrink: 0;
-      cursor: pointer;
-    }
-    .priority-low { background: #4caf50; }
-    .priority-medium { background: #ff9800; }
-    .priority-high { background: #e74c3c; }
+        /* ==========================================================================
+           4. APPLICATION HEADER & CONTROLS SECTION
+           ========================================================================== */
+        .app-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            background: #fff;
+            flex-shrink: 0;              /* Blocks dynamic shrinkage during window resizing */
+        }
 
-    /* ============================================
-       Todo Actions Styles
-    ============================================ */
-    .todo-actions button {
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      font-size: 1rem;
-      margin-left: 8px;
-      transition: color 0.3s;
-    }
-    .todo-actions button:hover { color: #333; }
+        /* Brand Typography */
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            user-select: none;
+        }
+        .logo .todo-text {
+            color: var(--text-secondary);
+        }
+        .logo .list-text {
+            color: var(--primary);
+            margin-left: 1px;
+        }
 
-    /* ============================================
-       Modal Styles
-    ============================================ */
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0,0,0,0.4);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      z-index: 1000;
-    }
-    .modal.active { display: flex; }
-    .modal-content {
-      background: #fff;
-      border-radius: 6px;
-      padding: 24px;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-      animation: fadeIn 0.3s ease;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .modal-content h2 {
-      text-align: center;
-      margin-bottom: 16px;
-      font-size: 1.5rem;
-    }
-    .modal-content input[type="text"] {
-      width: 100%;
-      padding: 10px 12px;
-      font-size: 1rem;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      margin-bottom: 16px;
-      transition: border-color 0.3s;
-    }
-    .modal-content input[type="text"]:focus {
-      outline: none;
-      border-color: #555;
-    }
-    .modal-actions { text-align: right; }
-    .modal-actions button {
-      padding: 8px 12px;
-      font-size: 0.9rem;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-left: 8px;
-      transition: background 0.3s;
-    }
-    .modal-actions .save-btn { background: #333; color: #fff; }
-    .modal-actions .save-btn:hover { background: #555; }
-    .modal-actions .cancel-btn { background: #f1f1f1; color: #333; }
-    .modal-actions .cancel-btn:hover { background: #e1e1e1; }
+        /* Header Control Panel Utilities */
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
 
-    /* ============================================
-       Toast Notification Styles
-    ============================================ */
-    .toast-container {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 1100;
-      max-width: calc(100% - 40px); /* Ensure toast does not overflow on small screens */
-    }
-    .toast {
-      background: #333;
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 6px;
-      margin-top: 8px;
-      font-size: 0.9rem;
-      opacity: 0;
-      animation: toastIn 0.4s forwards, toastOut 0.4s forwards 3s;
-      word-wrap: break-word;
-    }
-    @keyframes toastIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes toastOut {
-      from { opacity: 1; }
-      to { opacity: 0; }
-    }
+        .search-wrapper {
+            position: relative;
+        }
+        .search-wrapper i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .search-input {
+            padding: 7px 12px 7px 32px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            outline: none;
+            width: 160px;
+            transition: var(--transition-smooth);
+        }
+        .search-input:focus {
+            border-color: var(--border-focus);
+            width: 200px;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.08);
+        }
 
-    /* ============================================
-       Footer Styles
-    ============================================ */
-    footer {
-      margin-top: 20px;
-      text-align: center;
-      font-size: 0.8rem;
-      color: #777;
-    }
-    footer a {
-      color: #777;
-      text-decoration: none;
-      transition: color 0.3s;
-    }
-    footer a:hover { color: #333; }
+        .select-filter {
+            padding: 7px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            outline: none;
+            background-color: #fff;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        .select-filter:focus {
+            border-color: var(--border-focus);
+        }
 
-    /* ============================================
-       Responsive Layout Adjustments
-    ============================================ */
-    @media (max-width: 768px) {
-      .todo-container { padding: 25px 30px; }
-      h1 { font-size: 1.8rem; }
-      .input-section input[type="text"],
-      .input-section select { font-size: 0.95rem; }
-      .input-section button { font-size: 1rem; }
-    }
-    @media (max-width: 480px) {
-      .filters { flex-direction: column; }
-      .filter-btns { justify-content: center; }
-      .clear-btn { width: 100%; }
-    }
-  </style>
+        /* Destructive System Action Buttons */
+        .btn-bulk-danger {
+            background-color: #fff;
+            border: 1px solid #fee2e2;
+            color: #ef4444;
+            padding: 7px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition-smooth);
+        }
+        .btn-bulk-danger:hover {
+            background-color: #fef2f2;
+            border-color: #fca5a5;
+        }
+
+        /* ==========================================================================
+           5. INLINE TASK CREATION ENGINE (MODAL-LESS ADDING INTERFACE)
+           ========================================================================== */
+        .add-todo-wrapper {
+            padding: 16px 24px 12px 24px;
+            background-color: #f8fafc;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .add-todo-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition-smooth);
+            overflow: hidden;
+        }
+        .add-todo-card:focus-within {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.08);
+        }
+
+        /* Top Row: Core task inputs & submissions */
+        .add-todo-main-row {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            gap: 12px;
+        }
+
+        .title-input-field {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        .title-input-field::placeholder {
+            color: var(--text-muted);
+        }
+
+        .row-right-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .char-counter {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .priority-select-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .priority-select-wrapper label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .btn-add-submit {
+            background-color: var(--primary);
+            color: #fff;
+            border: none;
+            outline: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition-smooth);
+        }
+        .btn-add-submit:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* Bottom Row: Collapsible metadata description area */
+        .add-todo-desc-row {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+            border-top: 0 solid var(--border-color);
+            background-color: #fafafa;
+        }
+        
+        /* Expands when active input criteria are validated */
+        .add-todo-card.expanded .add-todo-desc-row {
+            max-height: 80px;
+            opacity: 1;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .desc-textarea-field {
+            width: 100%;
+            height: 55px;
+            border: none;
+            outline: none;
+            resize: none;
+            padding: 10px 12px;
+            font-size: 0.85rem;
+            background: transparent;
+            color: var(--text-secondary);
+        }
+        .desc-textarea-field::placeholder {
+            color: var(--text-muted);
+        }
+
+        .desc-char-counter {
+            padding: 0 12px 6px 12px;
+            text-align: right;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        /* ==========================================================================
+           6. MOBILE PILL-STYLE SEGMENTED TABS
+              Only activates inside mobile media queries.
+           ========================================================================== */
+        .mobile-board-tabs {
+            display: none;
+            border-bottom: 1px solid var(--border-color);
+            background: #ffffff;
+            padding: 6px;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .mobile-tab-btn {
+            flex: 1;
+            padding: 8px 4px;
+            border: none;
+            background: #f1f5f9;         /* Gutter segmented layout */
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: var(--transition-smooth);
+        }
+        .mobile-tab-btn.active {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+        .mobile-tab-btn .badge {
+            background-color: #e2e8f0;
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            padding: 1px 6px;
+            border-radius: 10px;
+        }
+        .mobile-tab-btn.active .badge {
+            background-color: var(--primary);
+            color: #ffffff;
+        }
+
+        /* ==========================================================================
+           7. KANBAN CARD BOARD GRID LAYOUT
+           ========================================================================== */
+        .board-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            padding: 16px 24px;
+            background-color: #ffffff;
+            overflow: hidden;
+        }
+
+        .board-column {
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: var(--transition-smooth);
+        }
+        .board-column.drag-over {
+            border-color: var(--border-focus);
+            background-color: #f5f3ff;
+        }
+
+        .column-header {
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            user-select: none;
+        }
+        .column-title-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .column-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .column-dot.todo { background-color: var(--text-muted); }
+        .column-dot.progress { background-color: #f59e0b; }
+        .column-dot.done { background-color: #10b981; }
+
+        .column-header h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .column-count {
+            background-color: #e2e8f0;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        /* Internal column body scroll lock */
+        .column-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* ==========================================================================
+           8. TASK CARD COMPONENT
+           ========================================================================== */
+        .task-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: var(--shadow-sm);
+            cursor: grab;
+            transition: var(--transition-smooth);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            user-select: none;
+        }
+        .task-card:active {
+            cursor: grabbing;
+        }
+        .task-card.dragging {
+            opacity: 0.4;
+            transform: scale(0.98);
+        }
+        .task-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: #cbd5e1;
+        }
+
+        /* Left-side visual priority indicators */
+        .task-card.priority-low { border-left: 4px solid var(--priority-low-border); }
+        .task-card.priority-medium { border-left: 4px solid var(--priority-medium-border); }
+        .task-card.priority-high { border-left: 4px solid var(--priority-high-border); }
+
+        .task-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+        }
+
+        /* Clickable Priority Badges (Activates inline change dropdowns) */
+        .badge-priority {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+            position: relative;
+            user-select: none;
+            transition: var(--transition-smooth);
+        }
+        .badge-priority:hover {
+            filter: brightness(0.95);
+        }
+        .badge-priority.low {
+            background-color: var(--priority-low-bg);
+            color: var(--priority-low-text);
+        }
+        .badge-priority.medium {
+            background-color: var(--priority-medium-bg);
+            color: var(--priority-medium-text);
+        }
+        .badge-priority.high {
+            background-color: var(--priority-high-bg);
+            color: var(--priority-high-text);
+        }
+
+        .task-time {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .task-title {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.35;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .task-desc-excerpt {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-break: break-word;
+        }
+
+        /* Actions and touch navigations on cards */
+        .task-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 8px;
+            margin-top: 4px;
+        }
+
+        .card-actions-left {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-card-action {
+            background: transparent;
+            border: none;
+            outline: none;
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            transition: var(--transition-smooth);
+        }
+        .btn-card-action:hover {
+            background-color: #f1f5f9;
+            color: var(--text-primary);
+        }
+        .btn-card-action.btn-tick {
+            color: #10b981;
+        }
+        .btn-card-action.btn-tick:hover {
+            background-color: #ecfdf5;
+        }
+
+        /* Touch alternative directional controls */
+        .card-nav-arrows {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .btn-arrow {
+            background: #f1f5f9;
+            border: none;
+            outline: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            transition: var(--transition-smooth);
+        }
+        .btn-arrow:hover {
+            background-color: #e2e8f0;
+            color: var(--text-primary);
+        }
+
+        /* Immutable locked styles inside Completed/Done Column */
+        .board-column.col-done .task-card {
+            opacity: 0.85;
+            cursor: not-allowed;
+        }
+        .board-column.col-done .task-title {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        /* Column empty illustrations */
+        .empty-column-placeholder {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            text-align: center;
+            color: var(--text-muted);
+            pointer-events: none;
+            user-select: none;
+        }
+        .empty-column-placeholder i {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+        }
+        .empty-column-placeholder p {
+            font-size: 0.78rem;
+            font-weight: 500;
+        }
+
+        /* ==========================================================================
+           9. DIRECT ACCESS PRIORITY SELECT MENU
+           ========================================================================== */
+        .badge-dropdown-menu {
+            position: absolute;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            padding: 4px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 100px;
+        }
+        .badge-dropdown-item {
+            padding: 6px 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+            transition: var(--transition-smooth);
+        }
+        .badge-dropdown-item.low {
+            color: var(--priority-low-text);
+        }
+        .badge-dropdown-item.low:hover {
+            background-color: var(--priority-low-bg);
+        }
+        .badge-dropdown-item.medium {
+            color: var(--priority-medium-text);
+        }
+        .badge-dropdown-item.medium:hover {
+            background-color: var(--priority-medium-bg);
+        }
+        .badge-dropdown-item.high {
+            color: var(--priority-high-text);
+        }
+        .badge-dropdown-item.high:hover {
+            background-color: var(--priority-high-bg);
+        }
+
+        /* ==========================================================================
+           10. CUSTOM CURATED CONTEXT MENU (MOUSE RIGHT-CLICK)
+           ========================================================================== */
+        .custom-context-menu {
+            position: absolute;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            width: 160px;
+            z-index: 9999;
+            padding: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .context-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        .context-menu-item:hover {
+            background-color: #f1f5f9;
+            color: var(--text-primary);
+        }
+        .context-menu-item.danger {
+            color: #ef4444;
+        }
+        .context-menu-item.danger:hover {
+            background-color: #fef2f2;
+            color: #dc2626;
+        }
+        .context-menu-item.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .context-divider {
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 4px 2px;
+        }
+
+        /* ==========================================================================
+           11. ACCESSIBLE OVERLAY MODAL INTERFACES
+           ========================================================================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(15, 23, 42, 0.4); /* Subdued Slate backdrop tint */
+            backdrop-filter: blur(2px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-container {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal-overlay.active .modal-container {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-header h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .btn-modal-close {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: var(--transition-smooth);
+        }
+        .btn-modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .modal-footer {
+            padding: 12px 20px;
+            border-top: 1px solid var(--border-color);
+            background-color: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        /* Modal Forms Layout */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .form-group label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .form-input {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            outline: none;
+            font-size: 0.88rem;
+            transition: var(--transition-smooth);
+        }
+        .form-input:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.08);
+        }
+        .form-textarea {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            outline: none;
+            font-size: 0.88rem;
+            height: 80px;
+            resize: none;
+            transition: var(--transition-smooth);
+        }
+        .form-textarea:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.08);
+        }
+
+        /* Universal Form Buttons */
+        .btn {
+            padding: 8px 14px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition-smooth);
+        }
+        .btn-secondary {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        .btn-secondary:hover {
+            background-color: #f1f5f9;
+            color: var(--text-primary);
+        }
+        .btn-primary {
+            background-color: var(--primary);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+        .btn-danger {
+            background-color: #ef4444;
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        /* Descriptive metadata tables */
+        .meta-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px 12px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .meta-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+        }
+        .meta-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .meta-value {
+            color: var(--text-primary);
+        }
+
+        /* ==========================================================================
+           12. CURATED SYSTEM TOASTER SYSTEM
+           ========================================================================== */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 11000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+        .toast {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--primary);
+            box-shadow: var(--shadow-lg);
+            padding: 12px 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 250px;
+            max-width: 350px;
+            transform: translateX(120%);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+            pointer-events: auto;
+            opacity: 0;
+        }
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        .toast i {
+            font-size: 1rem;
+        }
+        .toast-info { border-left-color: var(--primary); }
+        .toast-info i { color: var(--primary); }
+        .toast-success { border-left-color: #10b981; }
+        .toast-success i { color: #10b981; }
+        .toast-warning { border-left-color: #f59e0b; }
+        .toast-warning i { color: #f59e0b; }
+        .toast-error { border-left-color: #ef4444; }
+        .toast-error i { color: #ef4444; }
+        .toast-message {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        /* ==========================================================================
+           13. DEDICATED COPYRIGHT FOOTER
+           ========================================================================== */
+        .app-footer {
+            padding: 12px 0 4px 0;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+            width: 100%;
+            user-select: none;
+            flex-shrink: 0;              /* Blocks dynamic shrinkage under constraint conditions */
+        }
+        .app-footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition-smooth);
+        }
+        .app-footer a:hover {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        /* Utility helper */
+        .hidden {
+            display: none !important;
+        }
+
+        /* ==========================================================================
+           14. STABLE RESPONSIVE ADAPTATIONS (MOBILE OPTIMIZATIONS)
+           ========================================================================== */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px 12px 8px 12px;
+            }
+
+            .app-card {
+                /* Calibrates layout structure to dynamic device bounds subtracting the footer spacing */
+                height: calc(100% - 40px); 
+            }
+
+            /* Shift Header Control Elements to 2x2 Symmetric Matrix Grid */
+            .app-header {
+                padding: 12px;
+                gap: 8px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .logo {
+                text-align: center;
+                font-size: 1.3rem;
+                margin-bottom: 2px;
+            }
+
+            .header-controls {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+                width: 100%;
+            }
+
+            .search-wrapper {
+                grid-column: span 2;
+            }
+            .search-input {
+                width: 100% !important;
+                font-size: 16px !important; /* Prevents auto-zooming scaling issues on iOS Safari */
+            }
+
+            .select-filter {
+                width: 100%;
+                font-size: 0.8rem;
+                padding: 6px 8px;
+                height: 36px;
+            }
+
+            .btn-bulk-danger {
+                width: 100%;
+                font-size: 0.8rem;
+                padding: 6px 8px;
+                justify-content: center;
+                height: 36px;
+            }
+
+            /* Inline task creator mobile optimizations */
+            .add-todo-wrapper {
+                padding: 10px 12px;
+            }
+
+            .add-todo-main-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+                padding: 10px;
+            }
+
+            .title-input-field {
+                font-size: 16px !important; /* Prevents auto-zooming scaling issues on iOS Safari */
+                padding: 4px 0;
+            }
+
+            .row-right-group {
+                justify-content: space-between;
+                width: 100%;
+                border-top: 1px dashed var(--border-color); /* Premium decorative divider */
+                padding-top: 8px;
+                margin-top: 4px;
+            }
+
+            .add-todo-card.expanded .add-todo-desc-row {
+                max-height: 100px;
+            }
+
+            .desc-textarea-field {
+                font-size: 16px !important; /* Prevents auto-zooming scaling issues on iOS Safari */
+                height: 65px;
+            }
+
+            /* Activate segmented visual tabs in mobile viewports */
+            .mobile-board-tabs {
+                display: flex;
+            }
+
+            .board-container {
+                grid-template-columns: 1fr; /* Fall back to unified single column */
+                padding: 12px;
+                overflow: hidden;
+            }
+
+            /* Mask inactive columns on small devices */
+            .board-column {
+                display: none;
+                height: 100%;                /* Scales perfectly inside the active card container viewport */
+            }
+            .board-column.active-tab {
+                display: flex;
+            }
+
+            /* Responsive Modal Container Adjustments */
+            @media (max-width: 480px) {
+                .modal-container {
+                    width: 95%;
+                    margin: 10px;
+                }
+                .modal-body {
+                    padding: 16px;
+                    gap: 12px;
+                }
+                .modal-footer {
+                    padding: 10px 16px;
+                }
+                .form-input, .form-textarea {
+                    font-size: 16px !important; /* Prevents auto-zooming scaling issues on iOS Safari */
+                }
+            }
+
+            .app-footer {
+                padding: 8px 0 2px 0;
+            }
+        }
+    </style>
 </head>
 <body>
-  <!-- Main Application Container -->
-  <div class="todo-container">
-    <h1>To-Do List</h1>
-    <!-- Input Section: New Todo, Priority Selection, and Add Button -->
-    <div class="input-section">
-      <input type="text" id="todoInput" placeholder="Add a new task..." />
-      <select id="todoPriority">
-        <option value="low">Low</option>
-        <option value="medium" selected>Medium</option>
-        <option value="high">High</option>
-      </select>
-      <button id="addTodoBtn"><i class="fas fa-plus"></i></button>
+
+    <!-- Master Application Dashboard -->
+    <div class="app-card" id="appCard">
+        
+        <!-- Header Controls & Branding -->
+        <header class="app-header">
+            <div class="logo">
+                <span class="todo-text">todo</span><span class="list-text">list</span>
+            </div>
+            
+            <div class="header-controls">
+                <div class="search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search tasks...">
+                </div>
+                
+                <select id="priorityFilter" class="select-filter">
+                    <option value="all">All Priorities</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+
+                <select id="sortBySelect" class="select-filter">
+                    <option value="date-desc">Newest First</option>
+                    <option value="date-asc">Oldest First</option>
+                    <option value="priority-desc">Highest Priority</option>
+                    <option value="title-asc">Title (A-Z)</option>
+                </select>
+
+                <button id="clearCompletedBtn" class="btn-bulk-danger" title="Clear completed tasks">
+                    <i class="fas fa-check-double"></i> Clean Done
+                </button>
+                <button id="clearAllBtn" class="btn-bulk-danger" title="Clear all tasks">
+                    <i class="fas fa-trash-alt"></i> Clean All
+                </button>
+            </div>
+        </header>
+
+        <!-- Inline Task Creator Container -->
+        <section class="add-todo-wrapper">
+            <div class="add-todo-card" id="addTodoCard">
+                <!-- Inline Core Inputs Row -->
+                <div class="add-todo-main-row">
+                    <input type="text" id="todoTitleInput" class="title-input-field" placeholder="Add a new todo task..." minlength="3" maxlength="40">
+                    
+                    <div class="row-right-group">
+                        <span id="titleCounter" class="char-counter">40 left</span>
+                        
+                        <div class="priority-select-wrapper">
+                            <label for="todoPriorityInput">Priority:</label>
+                            <select id="todoPriorityInput" class="select-filter" style="padding: 4px 6px;">
+                                <option value="low" selected>Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+
+                        <button id="addTodoBtn" class="btn-add-submit">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Auxiliary Collapsible Meta Description Field -->
+                <div class="add-todo-desc-row">
+                    <textarea id="todoDescInput" class="desc-textarea-field" placeholder="Add description (optional)..." maxlength="150"></textarea>
+                    <div id="descCounter" class="desc-char-counter">150 left</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Mobile Navigation Tabs Control Bar -->
+        <nav class="mobile-board-tabs" id="mobileTabs">
+            <button class="mobile-tab-btn active" data-tab="todo">
+                To Do <span class="badge" id="todoTabBadge">0</span>
+            </button>
+            <button class="mobile-tab-btn" data-tab="progress">
+                In Progress <span class="badge" id="progressTabBadge">0</span>
+            </button>
+            <button class="mobile-tab-btn" data-tab="done">
+                Done <span class="badge" id="doneTabBadge">0</span>
+            </button>
+        </nav>
+
+        <!-- Kanban Columns Board Container -->
+        <main class="board-container">
+            
+            <!-- COLUMN 1: TO DO -->
+            <section class="board-column active-tab" id="columnTodo" data-column="todo">
+                <header class="column-header">
+                    <div class="column-title-group">
+                        <span class="column-dot todo"></span>
+                        <h3>To Do</h3>
+                    </div>
+                    <span class="column-count" id="countTodo">0</span>
+                </header>
+                <div class="column-body no-scrollbar" id="bodyTodo"></div>
+            </section>
+
+            <!-- COLUMN 2: IN PROGRESS -->
+            <section class="board-column" id="columnProgress" data-column="progress">
+                <header class="column-header">
+                    <div class="column-title-group">
+                        <span class="column-dot progress"></span>
+                        <h3>In Progress</h3>
+                    </div>
+                    <span class="column-count" id="countProgress">0</span>
+                </header>
+                <div class="column-body no-scrollbar" id="bodyProgress"></div>
+            </section>
+
+            <!-- COLUMN 3: DONE -->
+            <section class="board-column" id="columnDone" data-column="done">
+                <header class="column-header">
+                    <div class="column-title-group">
+                        <span class="column-dot done"></span>
+                        <h3>Done</h3>
+                    </div>
+                    <span class="column-count" id="countDone">0</span>
+                </header>
+                <div class="column-body no-scrollbar" id="bodyDone"></div>
+            </section>
+
+        </main>
     </div>
-    <!-- Filters Section: Buttons for filtering todos -->
-    <div class="filters">
-      <div class="filter-btns">
-        <button data-filter="all" class="active">All</button>
-        <button data-filter="active">Active</button>
-        <button data-filter="completed">Completed</button>
-      </div>
-      <button class="clear-btn" id="clearCompletedBtn">Clear Completed</button>
+
+    <!-- Footnote Copyright Section -->
+    <footer class="app-footer">
+        © 2026 todolist. Developed by <a href="https://github.com/ramazancetinkaya" target="_blank" rel="noopener noreferrer">ramazancetinkaya</a>.
+    </footer>
+
+    <!-- ==========================================================================
+       MODALS, DROPDOWNS & INTERACTIVE OVERLAYS
+       ========================================================================== -->
+
+    <!-- DETAILED VIEW MODAL -->
+    <div class="modal-overlay" id="viewModal">
+        <div class="modal-container">
+            <header class="modal-header">
+                <h3 id="viewModalTitle">Task Details</h3>
+                <button class="btn-modal-close" onclick="closeModal('viewModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </header>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Task Title</label>
+                    <p id="viewTaskTitleText" style="font-weight: 600; font-size: 0.95rem; line-height: 1.4; word-break: break-word;"></p>
+                </div>
+                <div class="form-group">
+                    <label>Priority</label>
+                    <div style="display: flex;">
+                        <span id="viewTaskPriorityBadge" class="badge-priority">Low</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <p id="viewTaskDescText" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; word-break: break-word; background: #fafafa; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);"></p>
+                </div>
+                <div class="meta-list">
+                    <div class="meta-item">
+                        <span class="meta-label">Created At:</span>
+                        <span class="meta-value" id="viewTaskCreated"></span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Last Edited:</span>
+                        <span class="meta-value" id="viewTaskEdited"></span>
+                    </div>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('viewModal')">Close</button>
+            </footer>
+        </div>
     </div>
-    <!-- Todo List -->
-    <ul class="todo-list" id="todoList">
-      <!-- Todos are dynamically injected here -->
-    </ul>
-  </div>
 
-  <!-- Edit Modal for Updating Todos -->
-  <div class="modal" id="editModal">
-    <div class="modal-content">
-      <h2>Edit Todo</h2>
-      <input type="text" id="editTodoInput" placeholder="Edit todo..." />
-      <div class="modal-actions">
-        <button class="cancel-btn" id="cancelEditBtn">Cancel</button>
-        <button class="save-btn" id="saveEditBtn">Save</button>
-      </div>
+    <!-- TASK EDITING MODAL -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-container">
+            <header class="modal-header">
+                <h3>Edit Task</h3>
+                <button class="btn-modal-close" onclick="closeModal('editModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </header>
+            <div class="modal-body">
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between;">
+                        <label for="editTitleInput">Task Title *</label>
+                        <span id="editTitleCounter" class="char-counter">40 left</span>
+                    </div>
+                    <input type="text" id="editTitleInput" class="form-input" minlength="3" maxlength="40">
+                </div>
+                <div class="form-group">
+                    <label for="editPriorityInput">Priority</label>
+                    <select id="editPriorityInput" class="select-filter" style="width: 100%;">
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between;">
+                        <label for="editDescInput">Description (Optional)</label>
+                        <span id="editDescCounter" class="char-counter">150 left</span>
+                    </div>
+                    <textarea id="editDescInput" class="form-textarea" maxlength="150"></textarea>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('editModal')">Cancel</button>
+                <button class="btn btn-primary" id="saveEditBtn">Save Changes</button>
+            </footer>
+        </div>
     </div>
-  </div>
 
-  <!-- Toast Container for Notifications -->
-  <div class="toast-container" id="toastContainer"></div>
+    <!-- CUSTOM CONFIRMATION ACTION DIALOG -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-container" style="max-width: 380px;">
+            <header class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+                <h3 id="confirmModalTitle">Are you sure?</h3>
+                <button class="btn-modal-close" id="confirmCloseBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </header>
+            <div class="modal-body" style="padding-top: 10px; padding-bottom: 10px;">
+                <p id="confirmModalMessage" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;"></p>
+            </div>
+            <footer class="modal-footer" style="border-top: none; background: #fff;">
+                <button class="btn btn-secondary" id="confirmCancelBtn">Cancel</button>
+                <button class="btn btn-danger" id="confirmYesBtn">Yes, Proceed</button>
+            </footer>
+        </div>
+    </div>
 
-  <!-- Footer with GitHub Link -->
-  <footer>
-    &copy; 2025 Ramazan Çetinkaya <a href="https://github.com/ramazancetinkaya/simple-todolist" target="_blank">View on GitHub</a>
-  </footer>
+    <!-- MOUSE CONTEXT MENU DOM -->
+    <div class="custom-context-menu hidden" id="contextMenu">
+        <div class="context-menu-item" id="ctxView"><i class="fas fa-eye"></i> View Details</div>
+        <div class="context-menu-item" id="ctxEdit"><i class="fas fa-edit"></i> Edit Task</div>
+        <div class="context-divider"></div>
+        <div class="context-menu-item" id="ctxMoveTodo"><i class="fas fa-list"></i> Move to To Do</div>
+        <div class="context-menu-item" id="ctxMoveProgress"><i class="fas fa-spinner"></i> Move to Progress</div>
+        <div class="context-menu-item" id="ctxMoveDone"><i class="fas fa-check-circle"></i> Move to Done</div>
+        <div class="context-divider"></div>
+        <div class="context-menu-item danger" id="ctxDelete"><i class="fas fa-trash-alt"></i> Delete Task</div>
+    </div>
 
-  <script>
-    /***************************************************
-     * Validation Regex and Character Limits
-     * - Todo text must start with an alphanumeric character.
-     * - Allowed characters include alphanumerics, spaces, and specific punctuation.
-     * - Minimum length: 3 characters, Maximum length: 100 characters.
-     ***************************************************/
-    const todoRegex = /^[A-Za-z0-9][A-Za-z0-9 ,.!?'"-]{2,99}$/;
-    const MIN_LENGTH = 3, MAX_LENGTH = 100;
+    <!-- DIRECT INLINE ACCESS PRIORITY CHANGE DROPDOWN MENU -->
+    <div class="badge-dropdown-menu hidden" id="badgePriorityMenu">
+        <div class="badge-dropdown-item low" data-priority="low">Low</div>
+        <div class="badge-dropdown-item medium" data-priority="medium">Medium</div>
+        <div class="badge-dropdown-item high" data-priority="high">High</div>
+    </div>
 
-    /***************************************************
-     * Local Storage Key and Application State Variables
-     ***************************************************/
-    const STORAGE_KEY = 'todos';
-    let currentFilter = 'all';
-    let todos = [];
-    let editTodoId = null;
-    let lastDeletedTodo = null;
-    let lastDeletedTimer = null;
-    const UNDO_DURATION = 5000; // 5 seconds undo duration
+    <!-- TOASTER NOTIFICATION PANEL -->
+    <div class="toast-container" id="toastContainer"></div>
 
-    /***************************************************
-     * DOM Element References
-     ***************************************************/
-    const todoInput = document.getElementById('todoInput');
-    const todoPriority = document.getElementById('todoPriority');
-    const addTodoBtn = document.getElementById('addTodoBtn');
-    const todoList = document.getElementById('todoList');
-    const editModal = document.getElementById('editModal');
-    const editTodoInput = document.getElementById('editTodoInput');
-    const cancelEditBtn = document.getElementById('cancelEditBtn');
-    const saveEditBtn = document.getElementById('saveEditBtn');
-    const toastContainer = document.getElementById('toastContainer');
-    const filterButtons = document.querySelectorAll('.filter-btns button');
-    const clearCompletedBtn = document.getElementById('clearCompletedBtn');
 
-    /***************************************************
-     * Function: isValidTodo
-     * Validates the todo text against the defined regex.
-     ***************************************************/
-    function isValidTodo(text) { return todoRegex.test(text); }
+    <!-- ==========================================================================
+       JAVASCRIPT APPLICATION ENGINE (LOGIC & ARCHITECTURE)
+       ========================================================================== */ -->
+    <script>
+        // ==========================================
+        // LOCAL STORAGE STORAGE KEY & SYSTEM STATE DECLARATIONS
+        // ==========================================
+        const LOCAL_STORAGE_KEY = 'todolist';
+        let state = {
+            tasks: [],
+            filterPriority: 'all',
+            sortBy: 'date-desc',
+            searchQuery: '',
+            activeTab: 'todo' // Active tracked tab on responsive mobile viewports
+        };
 
-    /***************************************************
-     * Priority Order and Helper Functions
-     * - Defines the order of priorities: high > medium > low.
-     * - getNextPriority cycles through the priorities.
-     ***************************************************/
-    const priorityOrder = { high: 3, medium: 2, low: 1 };
-    function getNextPriority(current) {
-      if(current === 'high') return 'medium';
-      if(current === 'medium') return 'low';
-      return 'high';
-    }
+        // Pre-defined engineering-focused tasks used as seed data on initial initialization
+        const demoTasks = [
+            {
+                id: 'demo-1',
+                title: 'Set up production CI/CD pipelines',
+                desc: 'Configure automated unit testing suite and Docker builds with GitHub Actions workflow steps.',
+                priority: 'high',
+                column: 'todo',
+                createdAt: Date.now() - 40 * 60 * 1000, // 40 minutes ago
+                editedAt: null,
+                completed: false
+            },
+            {
+                id: 'demo-2',
+                title: 'Create initial database migrations',
+                desc: 'Design table structures for secure user profiles, task history logs, and relational foreign keys.',
+                priority: 'medium',
+                column: 'todo',
+                createdAt: Date.now() - 15 * 60 * 1000, // 15 minutes ago
+                editedAt: null,
+                completed: false
+            },
+            {
+                id: 'demo-3',
+                title: 'Upgrade JWT security middleware',
+                desc: 'Refactor auth controller logic to enable seamless refresh token rotations and blacklists.',
+                priority: 'high',
+                column: 'progress',
+                createdAt: Date.now() - 3 * 3600 * 1000, // 3 hours ago
+                editedAt: null,
+                completed: false
+            },
+            {
+                id: 'demo-4',
+                title: 'Write Jest API integration tests',
+                desc: 'Mock payment gateway responses and secure complete checkout payload validations.',
+                priority: 'low',
+                column: 'progress',
+                createdAt: Date.now() - 6 * 3600 * 1000, // 6 hours ago
+                editedAt: null,
+                completed: false
+            },
+            {
+                id: 'demo-5',
+                title: 'Configure initial project repository',
+                desc: 'Create boilerplate, strict prettier/eslint configurations, and complete standard environment documentation.',
+                priority: 'low',
+                column: 'done',
+                createdAt: Date.now() - 25 * 3600 * 1000, // 25 hours ago
+                editedAt: Date.now() - 24 * 3600 * 1000, // Edited 24 hours ago
+                completed: true
+            }
+        ];
 
-    /***************************************************
-     * Function: init
-     * Loads todos from localStorage and renders them.
-     ***************************************************/
-    function init() {
-      const storedTodos = localStorage.getItem(STORAGE_KEY);
-      if(storedTodos) { todos = JSON.parse(storedTodos); }
-      renderTodos();
-    }
-
-    /***************************************************
-     * Function: renderTodos
-     * Sorts todos by priority and applies filter (all, active, completed),
-     * then dynamically creates and injects todo list items.
-     ***************************************************/
-    function renderTodos() {
-      // Sort todos based on priority
-      const sortedTodos = [...todos].sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
-      // Apply current filter
-      let filteredTodos = [];
-      if(currentFilter === 'all') { filteredTodos = sortedTodos; }
-      else if(currentFilter === 'active') { filteredTodos = sortedTodos.filter(todo => !todo.completed); }
-      else if(currentFilter === 'completed') { filteredTodos = sortedTodos.filter(todo => todo.completed); }
-      todoList.innerHTML = '';
-      if(filteredTodos.length === 0) {
-        todoList.innerHTML = '<p style="text-align:center; color:#999;">No todos found.</p>';
-        return;
-      }
-      // Create todo elements for each todo item
-      filteredTodos.forEach(todo => {
-        const li = document.createElement('li');
-        li.className = 'todo-item';
-        li.dataset.id = todo.id;
-        
-        const todoTextDiv = document.createElement('div');
-        todoTextDiv.className = 'todo-text';
-        if(todo.completed) { todoTextDiv.classList.add('completed'); }
-        
-        // Create checkbox icon for toggling completion status
-        const checkIcon = document.createElement('i');
-        checkIcon.className = todo.completed ? 'fas fa-check-circle' : 'far fa-circle';
-        checkIcon.style.cursor = 'pointer';
-        checkIcon.addEventListener('click', () => toggleComplete(todo.id));
-        
-        // Create text span for todo text
-        const span = document.createElement('span');
-        span.textContent = todo.text;
-        
-        // Create priority indicator and attach click event to cycle through priorities
-        const priorityIndicator = document.createElement('span');
-        priorityIndicator.classList.add('priority-indicator');
-        if(todo.priority === 'high'){ priorityIndicator.classList.add('priority-high'); }
-        else if(todo.priority === 'medium'){ priorityIndicator.classList.add('priority-medium'); }
-        else { priorityIndicator.classList.add('priority-low'); }
-        priorityIndicator.addEventListener('click', () => {
-          todo.priority = getNextPriority(todo.priority);
-          saveTodos();
-          renderTodos();
+        // ==========================================
+        // SYSTEM BOOTSTRAP AND LIFECYCLE MANAGEMENT
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFromStorage();
+            setupEventListeners();
+            render();
+            
+            // Keeps card timestamp relative text accurate without forcing database/DOM rebuilds
+            setInterval(() => {
+                renderTimestampsOnly();
+            }, 30000);
         });
-        
-        // Append the checkbox, priority indicator, and text to the todo text container
-        todoTextDiv.appendChild(checkIcon);
-        todoTextDiv.appendChild(priorityIndicator);
-        todoTextDiv.appendChild(span);
-        
-        // Create action buttons for edit and delete
-        const actionsDiv = document.createElement('div');
-        actionsDiv.className = 'todo-actions';
-        const editBtn = document.createElement('button');
-        editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-        editBtn.addEventListener('click', () => openEditModal(todo.id));
-        const deleteBtn = document.createElement('button');
-        deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-        deleteBtn.addEventListener('click', () => deleteTodo(todo.id));
-        actionsDiv.appendChild(editBtn);
-        actionsDiv.appendChild(deleteBtn);
-        
-        // Append text container and actions to the list item
-        li.appendChild(todoTextDiv);
-        li.appendChild(actionsDiv);
-        todoList.appendChild(li);
-      });
-    }
 
-    /***************************************************
-     * Function: saveTodos
-     * Saves the current todos array to localStorage.
-     ***************************************************/
-    function saveTodos() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
-    }
+        // Pull state from browser local persistence tier
+        function loadFromStorage() {
+            const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (saved) {
+                try {
+                    state = JSON.parse(saved);
+                    // Reset temporary UI search state parameters on boot
+                    state.searchQuery = '';
+                } catch (e) {
+                    console.error("Storage loading error:", e);
+                }
+            } else {
+                state.tasks = [...demoTasks];
+                saveToStorage();
+            }
+        }
 
-    /***************************************************
-     * Function: addTodo
-     * Validates and adds a new todo based on user input.
-     ***************************************************/
-    function addTodo() {
-      const text = todoInput.value.trim();
-      // Check for character length constraints
-      if(text.length < MIN_LENGTH || text.length > MAX_LENGTH) {
-        showToast(`Todo must be between ${MIN_LENGTH} and ${MAX_LENGTH} characters.`);
-        return;
-      }
-      // Validate allowed characters and that the text does not start with punctuation
-      if(!isValidTodo(text)) {
-        showToast('Invalid characters or todo cannot start with punctuation.');
-        return;
-      }
-      const newTodo = {
-        id: Date.now(),
-        text,
-        completed: false,
-        priority: todoPriority.value
-      };
-      todos.push(newTodo);
-      saveTodos();
-      renderTodos();
-      todoInput.value = '';
-      // Reset the priority dropdown to default (medium)
-      todoPriority.value = 'medium';
-      showToast('Todo added successfully!');
-    }
+        // Persist dynamic app data structures back to localStorage
+        function saveToStorage() {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
+        }
 
-    /***************************************************
-     * Function: deleteTodo
-     * Deletes a todo, and sets up an undo timer.
-     ***************************************************/
-    function deleteTodo(id) {
-      const todoToDelete = todos.find(todo => todo.id === id);
-      if(!todoToDelete) return;
-      // Remove the todo from the array
-      todos = todos.filter(todo => todo.id !== id);
-      saveTodos();
-      renderTodos();
-      // Store the deleted todo for potential undo
-      lastDeletedTodo = todoToDelete;
-      if(lastDeletedTimer) { clearTimeout(lastDeletedTimer); }
-      showToast('Todo deleted. ', undoDeletion);
-      lastDeletedTimer = setTimeout(() => { lastDeletedTodo = null; }, UNDO_DURATION);
-    }
+        // ==========================================
+        // PREMIUM USER INTERFACE NOTIFICATIONS (TOASTS)
+        // ==========================================
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            let icon = 'fa-info-circle';
+            if (type === 'success') icon = 'fa-check-circle';
+            if (type === 'warning') icon = 'fa-exclamation-triangle';
+            if (type === 'error') icon = 'fa-exclamation-circle';
 
-    /***************************************************
-     * Function: undoDeletion
-     * Restores the last deleted todo if undo is triggered.
-     ***************************************************/
-    function undoDeletion() {
-      if(lastDeletedTodo) {
-        todos.push(lastDeletedTodo);
-        saveTodos();
-        renderTodos();
-        lastDeletedTodo = null;
-        if(lastDeletedTimer) { clearTimeout(lastDeletedTimer); }
-        showToast('Deletion undone.');
-      }
-    }
+            toast.innerHTML = `
+                <i class="fas ${icon}"></i>
+                <span class="toast-message">${message}</span>
+            `;
+            container.appendChild(toast);
 
-    /***************************************************
-     * Function: toggleComplete
-     * Toggles the completed status of a todo.
-     ***************************************************/
-    function toggleComplete(id) {
-      todos = todos.map(todo => {
-        if(todo.id === id) { todo.completed = !todo.completed; }
-        return todo;
-      });
-      saveTodos();
-      renderTodos();
-    }
+            // Trigger entry spring-like slide interpolation
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 50);
 
-    /***************************************************
-     * Function: openEditModal
-     * Opens the modal with the selected todo's text for editing.
-     ***************************************************/
-    function openEditModal(id) {
-      editTodoId = id;
-      const todo = todos.find(t => t.id === id);
-      if(todo) {
-        editTodoInput.value = todo.text;
-        editModal.classList.add('active');
-        editTodoInput.focus();
-      }
-    }
+            // Automatically clean up after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
 
-    /***************************************************
-     * Function: closeEditModal
-     * Closes the edit modal and resets its state.
-     ***************************************************/
-    function closeEditModal() {
-      editModal.classList.remove('active');
-      editTodoInput.value = '';
-      editTodoId = null;
-    }
+        // ==========================================
+        // ARCHITECTURAL TIME & DATE PARSING CONVERSIONS
+        // ==========================================
+        function formatRelativeTime(timestamp) {
+            if (!timestamp) return 'Never';
+            const diff = Date.now() - timestamp;
+            const mins = Math.floor(diff / 60000);
+            
+            if (mins < 1) return 'just now';
+            if (mins < 60) return `${mins}m ago`;
+            
+            const hours = Math.floor(mins / 60);
+            if (hours < 24) return `${hours}h ago`;
+            
+            const days = Math.floor(hours / 24);
+            if (days === 1) return 'yesterday';
+            
+            const date = new Date(timestamp);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
 
-    /***************************************************
-     * Function: saveEditedTodo
-     * Validates and saves changes made to an existing todo.
-     ***************************************************/
-    function saveEditedTodo() {
-      const newText = editTodoInput.value.trim();
-      if(newText.length < MIN_LENGTH || newText.length > MAX_LENGTH) {
-        showToast(`Todo must be between ${MIN_LENGTH} and ${MAX_LENGTH} characters.`);
-        return;
-      }
-      if(!isValidTodo(newText)) {
-        showToast('Invalid characters or todo cannot start with punctuation.');
-        return;
-      }
-      todos = todos.map(todo => {
-        if(todo.id === editTodoId) { todo.text = newText; }
-        return todo;
-      });
-      saveTodos();
-      renderTodos();
-      closeEditModal();
-      showToast('Todo updated.');
-    }
+        function formatFullTime(timestamp) {
+            if (!timestamp) return 'Never edited';
+            const date = new Date(timestamp);
+            return date.toLocaleString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
 
-    /***************************************************
-     * Function: clearCompletedTodos
-     * Removes all todos marked as completed.
-     ***************************************************/
-    function clearCompletedTodos() {
-      const hasCompleted = todos.some(todo => todo.completed);
-      if(!hasCompleted) {
-        showToast('No completed todos to clear.');
-        return;
-      }
-      todos = todos.filter(todo => !todo.completed);
-      saveTodos();
-      renderTodos();
-      showToast('Completed todos cleared.');
-    }
+        // ==========================================
+        // PROMISE-BASED ACTIONS CONFIRMATION DIALOG (ASYNC MODAL)
+        // ==========================================
+        function requestConfirmation(title, message) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('confirmModal');
+                const titleEl = document.getElementById('confirmModalTitle');
+                const messageEl = document.getElementById('confirmModalMessage');
+                const cancelBtn = document.getElementById('confirmCancelBtn');
+                const closeBtn = document.getElementById('confirmCloseBtn');
+                const yesBtn = document.getElementById('confirmYesBtn');
 
-    /***************************************************
-     * Function: showToast
-     * Displays a toast notification with an optional undo callback.
-     ***************************************************/
-    function showToast(message, undoCallback) {
-      const toast = document.createElement('div');
-      toast.className = 'toast';
-      toast.textContent = message;
-      if(undoCallback) {
-        const undoBtn = document.createElement('button');
-        undoBtn.style.marginLeft = '10px';
-        undoBtn.style.background = 'transparent';
-        undoBtn.style.border = 'none';
-        undoBtn.style.color = '#4caf50';
-        undoBtn.style.cursor = 'pointer';
-        undoBtn.textContent = 'Undo';
-        undoBtn.addEventListener('click', () => {
-          undoCallback();
-          toast.remove();
-        });
-        toast.appendChild(undoBtn);
-      }
-      toastContainer.appendChild(toast);
-      setTimeout(() => { toast.remove(); }, 3500);
-    }
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+                modal.classList.add('active');
 
-    /***************************************************
-     * Function: setFilter
-     * Updates the current filter state and re-renders todos.
-     ***************************************************/
-    function setFilter(filter) {
-      currentFilter = filter;
-      filterButtons.forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.filter === filter);
-      });
-      renderTodos();
-    }
+                const handleChoice = (confirmed) => {
+                    modal.classList.remove('active');
+                    cleanup();
+                    resolve(confirmed);
+                };
 
-    /***************************************************
-     * Event Listeners Setup
-     ***************************************************/
-    addTodoBtn.addEventListener('click', addTodo);
-    todoInput.addEventListener('keypress', e => { if(e.key === 'Enter') addTodo(); });
-    cancelEditBtn.addEventListener('click', closeEditModal);
-    saveEditBtn.addEventListener('click', saveEditedTodo);
-    clearCompletedBtn.addEventListener('click', clearCompletedTodos);
-    filterButtons.forEach(btn => { btn.addEventListener('click', () => setFilter(btn.dataset.filter)); });
-    editModal.addEventListener('click', e => { if(e.target === editModal) closeEditModal(); });
+                const cleanup = () => {
+                    cancelBtn.removeEventListener('click', onCancel);
+                    closeBtn.removeEventListener('click', onCancel);
+                    yesBtn.removeEventListener('click', onConfirm);
+                };
 
-    // Initialize the application on page load
-    init();
-  </script>
+                const onCancel = () => handleChoice(false);
+                const onConfirm = () => handleChoice(true);
+
+                cancelBtn.addEventListener('click', onCancel);
+                closeBtn.addEventListener('click', onCancel);
+                yesBtn.addEventListener('click', onConfirm);
+            });
+        }
+
+        // ==========================================
+        // GLOBAL EVENT DELEGATIONS & REGISTER EVENTS
+        // ==========================================
+        let dragSrcId = null;
+
+        function setupEventListeners() {
+            const titleInput = document.getElementById('todoTitleInput');
+            const descInput = document.getElementById('todoDescInput');
+            const addTodoCard = document.getElementById('addTodoCard');
+            const titleCounter = document.getElementById('titleCounter');
+            const descCounter = document.getElementById('descCounter');
+
+            // Expand metadata textarea area when title field gains user focus
+            titleInput.addEventListener('focus', () => {
+                addTodoCard.classList.add('expanded');
+            });
+
+            // Compact input area back down if clicked externally and forms are clean
+            document.addEventListener('click', (e) => {
+                if (!addTodoCard.contains(e.target)) {
+                    if (titleInput.value.trim() === '' && descInput.value.trim() === '') {
+                        addTodoCard.classList.remove('expanded');
+                    }
+                }
+                hideContextMenu();
+                hideBadgePriorityMenu();
+            });
+
+            // Track remaining title characters dynamically
+            titleInput.addEventListener('input', () => {
+                const remaining = 40 - titleInput.value.length;
+                titleCounter.textContent = `${remaining} left`;
+                if (remaining < 10) {
+                    titleCounter.style.color = 'var(--priority-high-border)';
+                } else {
+                    titleCounter.style.color = 'var(--text-muted)';
+                }
+            });
+
+            // Track remaining description characters dynamically
+            descInput.addEventListener('input', () => {
+                const remaining = 150 - descInput.value.length;
+                descCounter.textContent = `${remaining} left`;
+                if (remaining < 15) {
+                    descCounter.style.color = 'var(--priority-high-border)';
+                } else {
+                    descCounter.style.color = 'var(--text-muted)';
+                }
+            });
+
+            // Submission triggers
+            document.getElementById('addTodoBtn').addEventListener('click', addNewTodo);
+            titleInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addNewTodo();
+            });
+
+            // Real-time filtering search updates
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                state.searchQuery = e.target.value.trim();
+                render();
+            });
+
+            document.getElementById('priorityFilter').addEventListener('change', (e) => {
+                state.filterPriority = e.target.value;
+                render();
+            });
+
+            document.getElementById('sortBySelect').addEventListener('change', (e) => {
+                state.sortBy = e.target.value;
+                render();
+            });
+
+            // Bulk operation triggers
+            document.getElementById('clearCompletedBtn').addEventListener('click', async () => {
+                const completedCount = state.tasks.filter(t => t.completed).length;
+                if (completedCount === 0) {
+                    showToast('There are no completed tasks to clear.', 'warning');
+                    return;
+                }
+                const confirmed = await requestConfirmation(
+                    'Clean Done Tasks',
+                    `Are you sure you want to permanently delete all ${completedCount} completed tasks?`
+                );
+                if (confirmed) {
+                    state.tasks = state.tasks.filter(t => !t.completed);
+                    saveToStorage();
+                    render();
+                    showToast('Completed tasks cleared successfully.', 'success');
+                }
+            });
+
+            document.getElementById('clearAllBtn').addEventListener('click', async () => {
+                if (state.tasks.length === 0) {
+                    showToast('There are no tasks to clear.', 'warning');
+                    return;
+                }
+                const confirmed = await requestConfirmation(
+                    'Clean All Tasks',
+                    'Are you sure you want to completely erase all tasks from all lists?'
+                );
+                if (confirmed) {
+                    state.tasks = [];
+                    saveToStorage();
+                    render();
+                    showToast('All tasks cleared successfully.', 'success');
+                }
+            });
+
+            // Mobile segmented Navigation button mapping
+            const mobileTabBtns = document.querySelectorAll('.mobile-tab-btn');
+            mobileTabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    mobileTabBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    const tabName = btn.getAttribute('data-tab');
+                    state.activeTab = tabName;
+                    
+                    document.querySelectorAll('.board-column').forEach(col => {
+                        col.classList.remove('active-tab');
+                    });
+                    
+                    if (tabName === 'todo') {
+                        document.getElementById('columnTodo').classList.add('active-tab');
+                    } else if (tabName === 'progress') {
+                        document.getElementById('columnProgress').classList.add('active-tab');
+                    } else if (tabName === 'done') {
+                        document.getElementById('columnDone').classList.add('active-tab');
+                    }
+                });
+            });
+
+            document.getElementById('saveEditBtn').addEventListener('click', saveEditedTask);
+
+            // Synchronize edit inputs character counters dynamically
+            const editTitleInput = document.getElementById('editTitleInput');
+            const editTitleCounter = document.getElementById('editTitleCounter');
+            editTitleInput.addEventListener('input', () => {
+                editTitleCounter.textContent = `${40 - editTitleInput.value.length} left`;
+            });
+
+            const editDescInput = document.getElementById('editDescInput');
+            const editDescCounter = document.getElementById('editDescCounter');
+            editDescInput.addEventListener('input', () => {
+                editDescCounter.textContent = `${150 - editDescInput.value.length} left`;
+            });
+
+            // Map Native HTML5 Drag and Drop zones
+            const columns = document.querySelectorAll('.board-column');
+            columns.forEach(col => {
+                col.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    col.classList.add('drag-over');
+                });
+                col.addEventListener('dragleave', () => {
+                    col.classList.remove('drag-over');
+                });
+                col.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    col.classList.remove('drag-over');
+                    const taskId = e.dataTransfer.getData('text/plain');
+                    const targetColumn = col.getAttribute('data-column');
+                    moveTask(taskId, targetColumn);
+                });
+            });
+        }
+
+        // ==========================================
+        // ADD NEW TASK CORE ALGORITHM
+        // ==========================================
+        function addNewTodo() {
+            const titleInput = document.getElementById('todoTitleInput');
+            const descInput = document.getElementById('todoDescInput');
+            const priorityInput = document.getElementById('todoPriorityInput');
+            
+            const title = titleInput.value.trim();
+            const desc = descInput.value.trim();
+            const priority = priorityInput.value;
+
+            // Strict Schema Field Validation Guardrails
+            if (title.length < 3) {
+                showToast('Task title must be at least 3 characters long!', 'error');
+                return;
+            }
+            if (title.length > 40) {
+                showToast('Task title cannot exceed 40 characters!', 'error');
+                return;
+            }
+            if (desc.length > 150) {
+                showToast('Description cannot exceed 150 characters!', 'error');
+                return;
+            }
+
+            // Create new standardized structural task entity
+            const newTask = {
+                id: 'task-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+                title: title,
+                desc: desc || '',
+                priority: priority,
+                column: 'todo',
+                createdAt: Date.now(),
+                editedAt: null,
+                completed: false
+            };
+
+            state.tasks.push(newTask);
+            saveToStorage();
+            
+            // Clean interface properties
+            titleInput.value = '';
+            descInput.value = '';
+            priorityInput.value = 'low';
+            
+            document.getElementById('titleCounter').textContent = '40 left';
+            document.getElementById('descCounter').textContent = '150 left';
+            
+            document.getElementById('addTodoCard').classList.remove('expanded');
+            
+            render();
+            showToast('New todo added successfully.', 'success');
+        }
+
+        // ==========================================
+        // ARCHITECTURAL TASK MOVEMENT ENGINE & RULES
+        // ==========================================
+        function moveTask(taskId, targetColumn) {
+            const task = state.tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            const oldColumn = task.column;
+            if (oldColumn === targetColumn) return;
+
+            // RULE 1: Tasks must flow chronologically; To Do directly to Done is unauthorized
+            if (targetColumn === 'done') {
+                if (oldColumn === 'todo') {
+                    showToast('Tasks must go through "In Progress" before entering "Done"!', 'warning');
+                    return;
+                }
+                if (!task.completed) {
+                    showToast('Task must be checked (completed) in Progress to move to Done!', 'warning');
+                    return;
+                }
+            }
+
+            // RULE 2: Tasks residing inside the initial To Do column cannot be marked completed
+            if (targetColumn === 'todo') {
+                task.completed = false; 
+            }
+
+            // RULE 3: Tasks shifted backward are fully reset and ticks cleared
+            if ((oldColumn === 'done' || oldColumn === 'progress') && (targetColumn === 'todo' || targetColumn === 'progress')) {
+                task.completed = false;
+            }
+
+            task.column = targetColumn;
+            saveToStorage();
+            render();
+            showToast(`Task moved to "${targetColumn.toUpperCase()}" list.`, 'info');
+        }
+
+        // Toggles checklist completion state triggers (Only valid within In Progress)
+        function toggleTaskComplete(taskId) {
+            const task = state.tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            if (task.column === 'todo') {
+                showToast('You cannot complete tasks in the To Do column.', 'warning');
+                return;
+            }
+
+            if (task.column === 'progress') {
+                task.completed = !task.completed;
+                if (task.completed) {
+                    task.column = 'done'; // Automatically transition onward to finished column
+                    showToast('Task completed! Moved to Done.', 'success');
+                }
+                saveToStorage();
+                render();
+            }
+        }
+
+        // ==========================================
+        // MASTER BOARD RENDER ENGINE
+        // ==========================================
+        function render() {
+            const bodyTodo = document.getElementById('bodyTodo');
+            const bodyProgress = document.getElementById('bodyProgress');
+            const bodyDone = document.getElementById('bodyDone');
+
+            // Hard clean all target columns
+            bodyTodo.innerHTML = '';
+            bodyProgress.innerHTML = '';
+            bodyDone.innerHTML = '';
+
+            let filteredTasks = [...state.tasks];
+
+            // Filter out entities not matching client query criteria
+            if (state.searchQuery) {
+                const query = state.searchQuery.toLowerCase();
+                filteredTasks = filteredTasks.filter(t => 
+                    t.title.toLowerCase().includes(query) || 
+                    t.desc.toLowerCase().includes(query)
+                );
+            }
+
+            if (state.filterPriority !== 'all') {
+                filteredTasks = filteredTasks.filter(t => t.priority === state.filterPriority);
+            }
+
+            // Perform sorting algorithms
+            filteredTasks.sort((a, b) => {
+                if (state.sortBy === 'date-desc') {
+                    return b.createdAt - a.createdAt;
+                } else if (state.sortBy === 'date-asc') {
+                    return a.createdAt - b.createdAt;
+                } else if (state.sortBy === 'priority-desc') {
+                    const priorityWeight = { high: 3, medium: 2, low: 1 };
+                    return priorityWeight[b.priority] - priorityWeight[a.priority];
+                } else if (state.sortBy === 'title-asc') {
+                    return a.title.localeCompare(b.title);
+                }
+                return 0;
+            });
+
+            // Map and count rendered arrays
+            const counts = { todo: 0, progress: 0, done: 0 };
+
+            filteredTasks.forEach(task => {
+                counts[task.column]++;
+                const card = createTaskCardDOM(task);
+                
+                if (task.column === 'todo') {
+                    bodyTodo.appendChild(card);
+                } else if (task.column === 'progress') {
+                    bodyProgress.appendChild(card);
+                } else if (task.column === 'done') {
+                    bodyDone.appendChild(card);
+                }
+            });
+
+            // Synchronize counters
+            document.getElementById('countTodo').textContent = counts.todo;
+            document.getElementById('countProgress').textContent = counts.progress;
+            document.getElementById('countDone').textContent = counts.done;
+
+            // Synchronize mobile segmented pills indicators
+            document.getElementById('todoTabBadge').textContent = counts.todo;
+            document.getElementById('progressTabBadge').textContent = counts.progress;
+            document.getElementById('doneTabBadge').textContent = counts.done;
+
+            // Verify if empty illustrations require mounting
+            checkEmptyState('todo', bodyTodo, counts.todo);
+            checkEmptyState('progress', bodyProgress, counts.progress);
+            checkEmptyState('done', bodyDone, counts.done);
+        }
+
+        // Mount friendly empty states when search criteria returns null arrays
+        function checkEmptyState(columnName, element, count) {
+            if (count === 0) {
+                let icon = 'fa-clipboard-list';
+                let msg = 'No tasks listed here.';
+                if (columnName === 'progress') {
+                    icon = 'fa-spinner';
+                    msg = 'Nothing in progress.';
+                } else if (columnName === 'done') {
+                    icon = 'fa-check-double';
+                    msg = 'No completed tasks yet.';
+                }
+                element.innerHTML = `
+                    <div class="empty-column-placeholder">
+                        <i class="fas ${icon}"></i>
+                        <p>${msg}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Perform isolated timestamp recalculations to prevent heavy DOM rendering loops
+        function renderTimestampsOnly() {
+            state.tasks.forEach(task => {
+                const badge = document.querySelector(`.task-card[data-id="${task.id}"] .task-time`);
+                if (badge) {
+                    badge.textContent = formatRelativeTime(task.createdAt);
+                }
+            });
+        }
+
+        // ==========================================
+        // CORE TASK CARD DOM GENERATOR
+        // ==========================================
+        function createTaskCardDOM(task) {
+            const card = document.createElement('article');
+            card.className = `task-card priority-${task.priority}`;
+            card.setAttribute('draggable', task.column !== 'done' ? 'true' : 'false');
+            card.setAttribute('data-id', task.id);
+
+            // Set HTML5 dragging listeners
+            if (task.column !== 'done') {
+                card.addEventListener('dragstart', (e) => {
+                    card.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', task.id);
+                });
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('dragging');
+                });
+            }
+
+            // Custom right-click routing trigger listener
+            card.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                showContextMenu(e.clientX, e.clientY, task.id);
+            });
+
+            const isDone = task.column === 'done';
+            const isProgress = task.column === 'progress';
+            const isTodo = task.column === 'todo';
+
+            const headerHTML = `
+                <div class="task-header">
+                    <span class="badge-priority ${task.priority}" onclick="openBadgePriorityMenu(event, '${task.id}')">${task.priority}</span>
+                    <span class="task-time">${formatRelativeTime(task.createdAt)}</span>
+                </div>
+            `;
+
+            const descHTML = task.desc 
+                ? `<p class="task-desc-excerpt">${task.desc}</p>` 
+                : `<p class="task-desc-excerpt" style="color:var(--text-muted); font-style:italic;">No description provided.</p>`;
+
+            // Directional triggers mapping for small screen touch usability
+            let navArrowsHTML = '';
+            if (isTodo) {
+                navArrowsHTML = `<button class="btn-arrow" onclick="moveTask('${task.id}', 'progress')" title="Move to Progress"><i class="fas fa-arrow-right"></i></button>`;
+            } else if (isProgress) {
+                navArrowsHTML = `
+                    <button class="btn-arrow" onclick="moveTask('${task.id}', 'todo')" title="Move back to To Do"><i class="fas fa-arrow-left"></i></button>
+                    <button class="btn-arrow" onclick="moveTask('${task.id}', 'done')" style="display:none;"></button>
+                `;
+            } else if (isDone) {
+                navArrowsHTML = `<button class="btn-arrow" onclick="moveTask('${task.id}', 'progress')" title="Move back to In Progress"><i class="fas fa-arrow-left"></i></button>`;
+            }
+
+            let tickButton = '';
+            if (isProgress) {
+                tickButton = `
+                    <button class="btn-card-action btn-tick" onclick="toggleTaskComplete('${task.id}')" title="Mark as Completed">
+                        <i class="${task.completed ? 'fas' : 'far'} fa-check-circle"></i>
+                    </button>
+                `;
+            }
+
+            const editButton = !isDone 
+                ? `<button class="btn-card-action" onclick="openEditModal('${task.id}')" title="Edit Task"><i class="fas fa-pencil-alt"></i></button>` 
+                : '';
+
+            const footerHTML = `
+                <div class="task-footer">
+                    <div class="card-actions-left">
+                        <button class="btn-card-action" onclick="openViewModal('${task.id}')" title="View Details"><i class="fas fa-expand-alt"></i></button>
+                        ${editButton}
+                        ${tickButton}
+                    </div>
+                    <div class="card-nav-arrows">
+                        ${navArrowsHTML}
+                    </div>
+                </div>
+            `;
+
+            card.innerHTML = `
+                ${headerHTML}
+                <h4 class="task-title">${task.title}</h4>
+                ${descHTML}
+                ${footerHTML}
+            `;
+
+            return card;
+        }
+
+        // ==========================================
+        // EXTENDED DETAILED VIEW MODAL BINDINGS
+        // ==========================================
+        function openViewModal(taskId) {
+            const task = state.tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            document.getElementById('viewTaskTitleText').textContent = task.title;
+            
+            const badge = document.getElementById('viewTaskPriorityBadge');
+            badge.textContent = task.priority;
+            badge.className = `badge-priority ${task.priority}`;
+            
+            document.getElementById('viewTaskDescText').textContent = task.desc || 'No description provided.';
+            document.getElementById('viewTaskCreated').textContent = formatFullTime(task.createdAt);
+            document.getElementById('viewTaskEdited').textContent = task.editedAt ? formatFullTime(task.editedAt) : 'Not edited yet';
+
+            openModal('viewModal');
+        }
+
+        // ==========================================
+        // EDIT ACTION DIALOG TARGET CONTROL HANDLERS
+        // ==========================================
+        let editingTaskId = null;
+
+        function openEditModal(taskId) {
+            const task = state.tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            if (task.column === 'done') {
+                showToast('You cannot edit completed tasks.', 'warning');
+                return;
+            }
+
+            editingTaskId = taskId;
+            
+            const titleInput = document.getElementById('editTitleInput');
+            const descInput = document.getElementById('editDescInput');
+            const priorityInput = document.getElementById('editPriorityInput');
+
+            titleInput.value = task.title;
+            descInput.value = task.desc || '';
+            priorityInput.value = task.priority;
+
+            document.getElementById('editTitleCounter').textContent = `${40 - task.title.length} left`;
+            document.getElementById('editDescCounter').textContent = `${150 - (task.desc ? task.desc.length : 0)} left`;
+
+            openModal('editModal');
+        }
+
+        function saveEditedTask() {
+            if (!editingTaskId) return;
+
+            const task = state.tasks.find(t => t.id === editingTaskId);
+            if (!task) return;
+
+            const titleInput = document.getElementById('editTitleInput');
+            const descInput = document.getElementById('editDescInput');
+            const priorityInput = document.getElementById('editPriorityInput');
+
+            const title = titleInput.value.trim();
+            const desc = descInput.value.trim();
+            const priority = priorityInput.value;
+
+            if (title.length < 3) {
+                showToast('Task title must be at least 3 characters long!', 'error');
+                return;
+            }
+            if (title.length > 40) {
+                showToast('Task title cannot exceed 40 characters!', 'error');
+                return;
+            }
+            if (desc.length > 150) {
+                showToast('Description cannot exceed 150 characters!', 'error');
+                return;
+            }
+
+            task.title = title;
+            task.desc = desc;
+            task.priority = priority;
+            task.editedAt = Date.now(); // Log edit operation time for validation views
+
+            saveToStorage();
+            closeModal('editModal');
+            render();
+            showToast('Task updated successfully.', 'success');
+            editingTaskId = null;
+        }
+
+        async function deleteTask(taskId) {
+            const task = state.tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            const confirmed = await requestConfirmation(
+                'Delete Task',
+                `Are you sure you want to permanently delete "${task.title}"?`
+            );
+            if (confirmed) {
+                state.tasks = state.tasks.filter(t => t.id !== taskId);
+                saveToStorage();
+                render();
+                showToast('Task deleted successfully.', 'success');
+            }
+        }
+
+        // ==========================================
+        // DIRECT BADGE ACCESS PRIORITY DROPDOWN CONTROL
+        // ==========================================
+        let badgeActiveTaskId = null;
+
+        function openBadgePriorityMenu(event, taskId) {
+            event.stopPropagation();
+            event.preventDefault();
+
+            const task = state.tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            if (task.column === 'done') {
+                showToast('You cannot change priority of completed tasks.', 'warning');
+                return;
+            }
+
+            badgeActiveTaskId = taskId;
+            const menu = document.getElementById('badgePriorityMenu');
+            menu.classList.remove('hidden');
+
+            const rect = event.currentTarget.getBoundingClientRect();
+            menu.style.top = `${rect.bottom + window.scrollY + 5}px`;
+            menu.style.left = `${rect.left + window.scrollX}px`;
+
+            const items = menu.querySelectorAll('.badge-dropdown-item');
+            items.forEach(item => {
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    const newPriority = item.getAttribute('data-priority');
+                    changeTaskPriorityDirectly(badgeActiveTaskId, newPriority);
+                    hideBadgePriorityMenu();
+                };
+            });
+        }
+
+        function changeTaskPriorityDirectly(taskId, newPriority) {
+            const task = state.tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            if (task.priority === newPriority) return;
+
+            task.priority = newPriority;
+            task.editedAt = Date.now();
+            saveToStorage();
+            render();
+            showToast(`Priority changed to ${newPriority.toUpperCase()}.`, 'success');
+        }
+
+        function hideBadgePriorityMenu() {
+            document.getElementById('badgePriorityMenu').classList.add('hidden');
+            badgeActiveTaskId = null;
+        }
+
+        // ==========================================
+        // RIGHT-CLICK CUSTOM SYSTEM CONTEXT MENU ROUTINES
+        // ==========================================
+        let contextActiveTaskId = null;
+
+        function showContextMenu(clientX, clientY, taskId) {
+            contextActiveTaskId = taskId;
+            const menu = document.getElementById('contextMenu');
+            const task = state.tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            menu.classList.remove('hidden');
+
+            const menuWidth = 160;
+            const menuHeight = 220;
+            let posX = clientX;
+            let posY = clientY;
+
+            // Collision checks to keep menu nested inside bounds of viewport
+            if (clientX + menuWidth > window.innerWidth) {
+                posX = clientX - menuWidth;
+            }
+            if (clientY + menuHeight > window.innerHeight) {
+                posY = clientY - menuHeight;
+            }
+
+            menu.style.top = `${posY + window.scrollY}px`;
+            menu.style.left = `${posX + window.scrollX}px`;
+
+            const isDone = task.column === 'done';
+            const isTodo = task.column === 'todo';
+            const isProgress = task.column === 'progress';
+
+            const ctxEdit = document.getElementById('ctxEdit');
+            const ctxMoveTodo = document.getElementById('ctxMoveTodo');
+            const ctxMoveProgress = document.getElementById('ctxMoveProgress');
+            const ctxMoveDone = document.getElementById('ctxMoveDone');
+
+            if (isDone) {
+                ctxEdit.classList.add('disabled');
+                ctxMoveTodo.classList.remove('disabled');
+                ctxMoveProgress.classList.remove('disabled');
+                ctxMoveDone.classList.add('disabled');
+            } else {
+                ctxEdit.classList.remove('disabled');
+                
+                if (isTodo) {
+                    ctxMoveTodo.classList.add('disabled');
+                    ctxMoveProgress.classList.remove('disabled');
+                    ctxMoveDone.classList.add('disabled'); 
+                } else if (isProgress) {
+                    ctxMoveTodo.classList.remove('disabled');
+                    ctxMoveProgress.classList.add('disabled');
+                    if (task.completed) {
+                        ctxMoveDone.classList.remove('disabled');
+                    } else {
+                        ctxMoveDone.classList.add('disabled');
+                    }
+                }
+            }
+
+            // Route execution targets dynamically on event mapping trigger
+            document.getElementById('ctxView').onclick = () => { openViewModal(taskId); hideContextMenu(); };
+            ctxEdit.onclick = () => { if (!isDone) openEditModal(taskId); hideContextMenu(); };
+            ctxMoveTodo.onclick = () => { moveTask(taskId, 'todo'); hideContextMenu(); };
+            ctxMoveProgress.onclick = () => { moveTask(taskId, 'progress'); hideContextMenu(); };
+            ctxMoveDone.onclick = () => { 
+                if (isProgress && !task.completed) {
+                    showToast('Tick the task first in order to move to Done!', 'warning');
+                } else {
+                    moveTask(taskId, 'done'); 
+                }
+                hideContextMenu(); 
+            };
+            document.getElementById('ctxDelete').onclick = () => { deleteTask(taskId); hideContextMenu(); };
+        }
+
+        function hideContextMenu() {
+            document.getElementById('contextMenu').classList.add('hidden');
+            contextActiveTaskId = null;
+        }
+
+        // ==========================================
+        // GENERAL SYSTEM MODAL OVERLAY WRAPPER CONTROL
+        // ==========================================
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            if (modalId === 'editModal') {
+                editingTaskId = null;
+            }
+        }
+    </script>
 </body>
 </html>
