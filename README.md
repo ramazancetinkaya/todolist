@@ -87,30 +87,6 @@ If you prefer not to use Git, you can download the project as a ZIP file:
 3. Select **"Download ZIP"** from the dropdown menu.
 4. Once the ZIP file is downloaded, extract it to your desired location.
 
-## Usage
-
-Follow these steps to get started:
-
-1. **Open the Project:**  
-   Navigate to the project folder and open `index.html` in your preferred web browser.
-
-2. **Add a Todo:**  
-   - Enter a todo in the input field (must meet validation criteria).  
-   - Select a priority from the dropdown (Low, Medium, High).  
-   - Click **Add** or press **Enter**.
-
-3. **Edit or Delete Todos:**  
-   - Click the edit icon to modify a todo.  
-   - Click the trash icon to delete a todo; a toast notification with an **Undo** option will appear.
-
-4. **Change Priority:**  
-   - Click the circular priority indicator next to a todo to cycle through its priorities.  
-   - The list automatically re-sorts based on priority.
-
-5. **Filter Todos:**  
-   - Use the filter buttons (All, Active, Completed) to view specific todos.  
-   - Use the **Clear Completed** button to remove all completed todos.
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a pull request or open an issue for any enhancements or bug fixes.
